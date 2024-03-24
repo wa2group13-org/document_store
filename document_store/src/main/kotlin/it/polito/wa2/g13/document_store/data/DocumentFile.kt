@@ -5,11 +5,10 @@ import jakarta.persistence.*
 @Entity
 class DocumentFile(
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long,
     val file: ByteArray,
-    @OneToOne(mappedBy = "fileBytes", cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
-    val metadata: DocumentMetadata
 ) {
-
+    @OneToOne(mappedBy = "fileBytes", cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
+    lateinit var metadata: DocumentMetadata
 }

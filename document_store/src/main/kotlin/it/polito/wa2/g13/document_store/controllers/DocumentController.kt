@@ -1,36 +1,48 @@
 package it.polito.wa2.g13.document_store.controllers
 
+import it.polito.wa2.g13.document_store.dtos.DocumentDTO
+import it.polito.wa2.g13.document_store.repositories.DocumentRepository
+import org.springframework.data.domain.PageRequest
+import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
 
 @RestController
-class DocumentController {
+@RequestMapping("/API/documents")
+class DocumentController(
+    val documentRepository: DocumentRepository
+) {
 
-    @GetMapping("/API/documents")
-    fun getAllDocuments(@RequestParam("pageNumber") pageNumber: Int, @RequestParam("limit") limit: Int) {
+    @GetMapping("")
+    @ResponseStatus(code = HttpStatus.CREATED)
+    fun getAllDocuments(
+        @RequestParam("pageNumber") pageNumber: Int,
+        @RequestParam("limit") limit: Int,
+    ): List<DocumentDTO> {
+        return documentRepository.getDocumentsByPage(PageRequest.of(pageNumber, limit)).map(DocumentDTO::from)
     }
 
-    @GetMapping("/API/documents/{metadataId}")
+    @GetMapping("{metadataId}")
     fun getDocumentDetails(@PathVariable("metadataId") metadataId: Int) {
 
     }
 
-    @GetMapping("/API/documents/{metadataId}/data")
+    @GetMapping("{metadataId}/data")
     fun getDocumentBytes(@PathVariable("metadataId") metadataId: Int) {
 
     }
 
-    @PostMapping("API/documents")
+    @PostMapping("")
     fun addDocument(@RequestParam("file") file: MultipartFile) {
 
     }
 
-    @PutMapping("/API/documents/{metadataId}")
+    @PutMapping("{metadataId}")
     fun updateDocumentDetails(@PathVariable("metadataId") metadataId: Int, @RequestParam("file") file: MultipartFile) {
 
     }
 
-    @DeleteMapping("/API/documents/{metadataId}")
+    @DeleteMapping("{metadataId}")
     fun deleteDocumentDetails(@PathVariable("metadataId") metadataId: Int) {
 
     }
