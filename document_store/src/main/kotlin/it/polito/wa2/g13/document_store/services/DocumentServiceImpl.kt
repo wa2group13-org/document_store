@@ -5,6 +5,7 @@ import it.polito.wa2.g13.document_store.dtos.DocumentMetadataDTO
 import it.polito.wa2.g13.document_store.dtos.UserDocumentDTO
 import it.polito.wa2.g13.document_store.repositories.DocumentRepository
 import it.polito.wa2.g13.document_store.util.exceptions.DocumentDuplicateException
+import it.polito.wa2.g13.document_store.util.exceptions.DocumentNotFoundException
 import org.slf4j.LoggerFactory
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.data.domain.PageRequest
@@ -23,6 +24,7 @@ class DocumentServiceImpl(private val documentRepository: DocumentRepository) : 
 
     override fun getDocumentMetadataById(metadataId: Long): DocumentMetadataDTO? {
         return documentRepository.getDocumentMetadataById(metadataId)?.let { DocumentMetadataDTO.from(it) }
+            ?: throw DocumentNotFoundException("Document $metadataId does not exists")
     }
 
     @Transactional(isolation = Isolation.REPEATABLE_READ)
