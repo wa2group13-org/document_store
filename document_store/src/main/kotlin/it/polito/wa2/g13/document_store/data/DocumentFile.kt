@@ -10,6 +10,6 @@ class DocumentFile(
     var id: Long,
     var file: ByteArray,
 ) {
-    @OneToOne(mappedBy = "fileBytes", cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "fileBytes", cascade = [CascadeType.ALL], fetch = FetchType.LAZY, orphanRemoval = true)
     lateinit var metadata: DocumentMetadata
 }

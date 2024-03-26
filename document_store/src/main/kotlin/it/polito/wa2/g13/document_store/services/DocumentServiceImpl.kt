@@ -9,6 +9,7 @@ import it.polito.wa2.g13.document_store.util.exceptions.DocumentNotFoundExceptio
 import it.polito.wa2.g13.document_store.util.nullable
 import org.slf4j.LoggerFactory
 import org.springframework.dao.DataIntegrityViolationException
+import org.springframework.dao.DataRetrievalFailureException
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Isolation
@@ -35,12 +36,39 @@ class DocumentServiceImpl(private val documentRepository: DocumentRepository) : 
             ?: throw DocumentNotFoundException("Document $metadataId does not exists")
     }
 
-    @Transactional(isolation = Isolation.REPEATABLE_READ)
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     override fun saveDocument(document: UserDocumentDTO) {
-        try {
-            documentRepository.save(DocumentMetadata.from(document))
+        val newId = try {
+            val newDocument = documentRepository.save(DocumentMetadata.from(document))
+            newDocument.id
         } catch (e: DataIntegrityViolationException) {
             throw DocumentDuplicateException(e.message)
         }
+
+        logger.info("Added new Document with Id \"$newId\".")
+    }
+
+    @Transactional(isolation = Isolation.READ_COMMITTED)
+    override fun updateDocument(metadataId: Long, document: UserDocumentDTO) {
+        val oldDocument = documentRepository.findById(metadataId).nullable()
+            ?: throw DocumentNotFoundException("Document with id \"$metadataId\" does not exists.")
+
+        documentRepository.save(DocumentMetadata.from(document).apply {
+            this.id = metadataId
+            this.fileBytes.id = oldDocument.fileBytes.id
+        })
+
+        logger.info("Updated Document with Id \"$metadataId\".")
+    }
+
+    @Transactional(isolation = Isolation.READ_COMMITTED)
+    override fun deleteDocument(metadataId: Long) {
+        try {
+            documentRepository.deleteById(metadataId)
+        } catch (e: DataRetrievalFailureException) {
+            throw DocumentNotFoundException(e.message)
+        }
+
+        logger.info("Deleted Document with Id \"$metadataId\".")
     }
 }

@@ -19,9 +19,10 @@ class DocumentMetadata(
     var size: Long,
     var contentType: String,
     @Temporal(TemporalType.TIMESTAMP)
+    @Column(updatable = false)
     var creationTimestamp: Date,
     @OneToOne(cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
-    @JoinColumn(referencedColumnName = "id", name = "file_id")
+    @JoinColumn(referencedColumnName = "id", name = "file_id", foreignKey = ForeignKey())
     var fileBytes: DocumentFile
 ) {
 

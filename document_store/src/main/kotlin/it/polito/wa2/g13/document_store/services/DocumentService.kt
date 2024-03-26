@@ -11,4 +11,8 @@ interface DocumentService {
     fun getDocumentBytes(metadataId: Long): String
 
     fun saveDocument(document: UserDocumentDTO)
+
+    fun updateDocument(metadataId: Long, document: UserDocumentDTO)
+
+    fun deleteDocument(metadataId: Long)
 }

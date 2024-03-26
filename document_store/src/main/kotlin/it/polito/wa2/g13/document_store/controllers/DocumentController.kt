@@ -5,7 +5,6 @@ import it.polito.wa2.g13.document_store.dtos.UserDocumentDTO
 import it.polito.wa2.g13.document_store.services.DocumentService
 import it.polito.wa2.g13.document_store.util.Err
 import it.polito.wa2.g13.document_store.util.Ok
-import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.ProblemDetail
 import org.springframework.http.ResponseEntity
@@ -18,7 +17,7 @@ class DocumentController(
     private val documentService: DocumentService,
 ) {
 
-    private val logger = LoggerFactory.getLogger(DocumentController::class.java)
+//    private val logger = LoggerFactory.getLogger(DocumentController::class.java)
 
     @GetMapping("")
     fun getAllDocuments(
@@ -58,12 +57,27 @@ class DocumentController(
     }
 
     @PutMapping("{metadataId}")
-    fun updateDocumentDetails(@PathVariable("metadataId") metadataId: Int, @RequestParam("file") file: MultipartFile) {
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    fun updateDocumentDetails(
+        @PathVariable("metadataId") metadataId: Long,
+        @RequestParam("file") file: MultipartFile
+    ): ResponseEntity<Unit> {
+        val document = UserDocumentDTO.from(file).let {
+            when (it) {
+                is Ok -> it.t
+                is Err -> return ResponseEntity.of(ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, it.err))
+                    .build()
+            }
+        }
 
+        documentService.updateDocument(metadataId, document)
+
+        return ResponseEntity.noContent().build()
     }
 
     @DeleteMapping("{metadataId}")
-    fun deleteDocumentDetails(@PathVariable("metadataId") metadataId: Int) {
-
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    fun deleteDocumentDetails(@PathVariable("metadataId") metadataId: Long) {
+        documentService.deleteDocument(metadataId)
     }
 }
