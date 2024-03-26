@@ -6,7 +6,9 @@ import it.polito.wa2.g13.document_store.dtos.UserDocumentDTO
 interface DocumentService {
     fun getDocumentByPage(pageNumber: Int, limit: Int): List<DocumentMetadataDTO>
 
-    fun getDocumentMetadataById(metadataId: Long): DocumentMetadataDTO?
+    fun getDocumentMetadataById(metadataId: Long): DocumentMetadataDTO
+
+    fun getDocumentBytes(metadataId: Long): String
 
     fun saveDocument(document: UserDocumentDTO)
 }

@@ -6,12 +6,14 @@ import it.polito.wa2.g13.document_store.dtos.UserDocumentDTO
 import it.polito.wa2.g13.document_store.repositories.DocumentRepository
 import it.polito.wa2.g13.document_store.util.exceptions.DocumentDuplicateException
 import it.polito.wa2.g13.document_store.util.exceptions.DocumentNotFoundException
+import it.polito.wa2.g13.document_store.util.nullable
 import org.slf4j.LoggerFactory
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Isolation
 import org.springframework.transaction.annotation.Transactional
+import java.util.*
 
 @Service
 class DocumentServiceImpl(private val documentRepository: DocumentRepository) : DocumentService {
@@ -22,8 +24,14 @@ class DocumentServiceImpl(private val documentRepository: DocumentRepository) : 
         return documentRepository.findAll(PageRequest.of(pageNumber, limit)).map(DocumentMetadataDTO::from).toList()
     }
 
-    override fun getDocumentMetadataById(metadataId: Long): DocumentMetadataDTO? {
+    override fun getDocumentMetadataById(metadataId: Long): DocumentMetadataDTO {
         return documentRepository.getDocumentMetadataById(metadataId)?.let { DocumentMetadataDTO.from(it) }
+            ?: throw DocumentNotFoundException("Document $metadataId does not exists")
+    }
+
+    override fun getDocumentBytes(metadataId: Long): String {
+        return documentRepository.findById(metadataId).nullable()
+            ?.let { Base64.getEncoder().encodeToString(it.fileBytes.file) }
             ?: throw DocumentNotFoundException("Document $metadataId does not exists")
     }
 

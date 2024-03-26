@@ -32,13 +32,14 @@ class DocumentController(
     fun getDocumentDetails(
         @PathVariable("metadataId") metadataId: Long
     ): DocumentMetadataDTO? {
-        //TODO: error handling (DocumentMetadataDTO does not exist -> DocumentService)
         return documentService.getDocumentMetadataById(metadataId)
     }
 
     @GetMapping("{metadataId}/data")
-    fun getDocumentBytes(@PathVariable("metadataId") metadataId: Int) {
-
+    fun getDocumentBytes(
+        @PathVariable("metadataId") metadataId: Long
+    ): String {
+        return documentService.getDocumentBytes(metadataId)
     }
 
     @PostMapping("")
