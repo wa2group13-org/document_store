@@ -10,14 +10,67 @@ sealed class Result<T, E> {
 
     fun isErr(): Boolean = this is Err
 
-    fun option(): T? = when (this) {
+    /**
+     * Converts from [Result]<T, E> to [T]?.
+     *
+     * Converts this into a [T]?, consuming this, and discarding the error, if any.
+     */
+    fun ok(): T? = when (this) {
         is Ok -> this.t
         is Err -> null
     }
 
+    /**
+     * Converts from [Result]<T, E> to [E]?.
+     *
+     * Converts this into an [E]?, consuming this, and discarding the success value, if any.
+     */
+    fun err(): E? = when (this) {
+        is Ok -> null
+        is Err -> this.err
+    }
+
+    /**
+     * Maps a [Result]<T, E> to [Result]<U, E> by applying a function to a contained [Ok] value, leaving an [Err] value untouched.
+     *
+     * This function can be used to compose the results of two functions.
+     */
     fun <R> map(f: (T) -> R): Result<R, E> = when (this) {
         is Ok -> Ok(f(this.t))
         is Err -> Err(this.err)
+    }
+
+    /**
+     * Returns the provided default (if [Err]), or applies a function to the contained value (if [Ok]).
+     *
+     * Arguments passed to [mapOr] are eagerly evaluated; if you are passing the result of a function call,
+     * it is recommended to use [mapOrElse], which is lazily evaluated
+     */
+    fun <U> mapOr(default: U, f: (T) -> U): U = when (this) {
+        is Ok -> f(this.t)
+        is Err -> default
+    }
+
+    /**
+     * Maps a [Result]<T, E> to [U] by applying fallback function [default] to a contained [Err] value,
+     * or function [f] to a contained [Ok] value.
+     *
+     * This function can be used to unpack a successful result while handling an error.
+     */
+    fun <U> mapOrElse(default: (E) -> U, f: (T) -> U): U = when (this) {
+        is Ok -> f(this.t)
+        is Err -> default(this.err)
+    }
+
+    /**
+     * Maps a [Result]<T, E> to [Result]<T, F> by applying a function to a contained [Err] value,
+     * leaving an [Ok] value untouched.
+     *
+     * This function can be used to pass through a successful result while handling an error.
+     */
+    fun <F> mapErr(op: (E) -> F): Result<T, F> = when (this) {
+        is Ok -> Ok(this.t)
+        is Err -> Err(op(this.err))
     }
 
     /**
