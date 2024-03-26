@@ -115,6 +115,7 @@ sealed class Result<T, E> {
         is Err -> f(this.err)
     }
 
+    fun unwrap(): T = (this as Ok).t
 
     /**
      * Returns the contained [Ok] value or a provided [default].

@@ -1,10 +1,7 @@
 package it.polito.wa2.g13.document_store.data
 
-import it.polito.wa2.g13.document_store.util.Err
-import it.polito.wa2.g13.document_store.util.Ok
-import it.polito.wa2.g13.document_store.util.Result
+import it.polito.wa2.g13.document_store.dtos.UserDocumentDTO
 import jakarta.persistence.*
-import org.springframework.web.multipart.MultipartFile
 import java.util.*
 
 /**
@@ -17,6 +14,7 @@ class DocumentMetadata(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long,
+    @Column(unique = true)
     var name: String,
     var size: Long,
     var contentType: String,
@@ -29,19 +27,16 @@ class DocumentMetadata(
 
     companion object {
         @JvmStatic
-        fun from(file: MultipartFile): Result<DocumentMetadata, String> {
-            val bytes = DocumentFile(0, file.bytes)
-            val metadata =
-                DocumentMetadata(
-                    0,
-                    file.originalFilename ?: return Err("Missing originalFilename"),
-                    file.size,
-                    file.contentType ?: return Err("Missing contentType"),
-                    Calendar.getInstance().time,
-                    bytes
-                )
-
-            return Ok(metadata)
+        fun from(file: UserDocumentDTO): DocumentMetadata {
+            val bytes = DocumentFile(0, file.bytes.toByteArray())
+            return DocumentMetadata(
+                0,
+                file.name,
+                file.size,
+                file.contentType,
+                Calendar.getInstance().time,
+                bytes
+            )
         }
     }
 }
