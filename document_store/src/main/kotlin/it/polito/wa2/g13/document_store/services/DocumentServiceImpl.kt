@@ -11,4 +11,8 @@ class DocumentServiceImpl(private val documentRepository: DocumentRepository) : 
     override fun getDocumentByPage(pageNumber: Int, limit: Int): List<DocumentMetadataDTO> {
         return documentRepository.findAll(PageRequest.of(pageNumber, limit)).map(DocumentMetadataDTO::from).toList()
     }
+
+    override fun getDocumentMetadataById(metadataId: Long): DocumentMetadataDTO? {
+        return documentRepository.getDocumentMetadataById(metadataId)?.let { DocumentMetadataDTO.from(it) }
+    }
 }
