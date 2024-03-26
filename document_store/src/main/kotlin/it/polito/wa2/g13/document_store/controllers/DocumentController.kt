@@ -1,25 +1,25 @@
 package it.polito.wa2.g13.document_store.controllers
 
-import it.polito.wa2.g13.document_store.dtos.DocumentDTO
-import it.polito.wa2.g13.document_store.repositories.DocumentRepository
-import org.springframework.data.domain.PageRequest
-import org.springframework.http.HttpStatus
+import it.polito.wa2.g13.document_store.dtos.DocumentMetadataDTO
+import it.polito.wa2.g13.document_store.services.DocumentService
+import org.slf4j.LoggerFactory
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
 
 @RestController
 @RequestMapping("/API/documents")
 class DocumentController(
-    val documentRepository: DocumentRepository
+    private val documentService: DocumentService,
 ) {
 
+    private val logger = LoggerFactory.getLogger(DocumentController::class.java)
+
     @GetMapping("")
-    @ResponseStatus(code = HttpStatus.CREATED)
     fun getAllDocuments(
         @RequestParam("pageNumber") pageNumber: Int,
         @RequestParam("limit") limit: Int,
-    ): List<DocumentDTO> {
-        return documentRepository.getDocumentsByPage(PageRequest.of(pageNumber, limit)).map(DocumentDTO::from)
+    ): List<DocumentMetadataDTO> {
+        return documentService.getDocumentByPage(pageNumber, limit)
     }
 
     @GetMapping("{metadataId}")
