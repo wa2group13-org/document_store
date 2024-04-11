@@ -86,9 +86,6 @@ class DocumentControllerTest {
 
     @Test
     fun get() {
-        val request = getMultipartFileRequest("compose.yml", "service:\n  name: boh")
-        restTemplate.exchange(request, String::class.java)
-
         val response = restTemplate.getForEntity<List<DocumentMetadataDTO>>("$ENDPOINT?pageNumber=0&limit=10")
 
         Assertions.assertTrue(response.statusCode.is2xxSuccessful)
