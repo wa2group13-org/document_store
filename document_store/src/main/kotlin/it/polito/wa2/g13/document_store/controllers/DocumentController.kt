@@ -1,5 +1,6 @@
 package it.polito.wa2.g13.document_store.controllers
 
+import it.polito.wa2.g13.document_store.aspects.DocumentResult
 import it.polito.wa2.g13.document_store.dtos.DocumentMetadataDTO
 import it.polito.wa2.g13.document_store.dtos.UserDocumentDTO
 import it.polito.wa2.g13.document_store.services.DocumentService
@@ -28,17 +29,23 @@ class DocumentController(
     }
 
     @GetMapping("{metadataId}")
+    @DocumentResult
     fun getDocumentDetails(
         @PathVariable("metadataId") metadataId: Long
-    ): DocumentMetadataDTO? {
-        return documentService.getDocumentMetadataById(metadataId)
+    ): Any {
+        return documentService.getDocumentMetadataById(metadataId).map {
+            ResponseEntity.ok(it)
+        }
     }
 
     @GetMapping("{metadataId}/data")
+    @DocumentResult
     fun getDocumentBytes(
         @PathVariable("metadataId") metadataId: Long
-    ): String {
-        return documentService.getDocumentBytes(metadataId)
+    ): Any {
+        return documentService.getDocumentBytes(metadataId).map {
+            ResponseEntity.ok(it)
+        }
     }
 
     @PostMapping("")

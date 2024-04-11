@@ -1,9 +1,13 @@
 package it.polito.wa2.g13.document_store.services
 
+import it.polito.wa2.g13.document_store.aspects.DocumentError
 import it.polito.wa2.g13.document_store.data.DocumentMetadata
 import it.polito.wa2.g13.document_store.dtos.DocumentMetadataDTO
 import it.polito.wa2.g13.document_store.dtos.UserDocumentDTO
 import it.polito.wa2.g13.document_store.repositories.DocumentRepository
+import it.polito.wa2.g13.document_store.util.Err
+import it.polito.wa2.g13.document_store.util.Ok
+import it.polito.wa2.g13.document_store.util.Result
 import it.polito.wa2.g13.document_store.util.exceptions.DocumentDuplicateException
 import it.polito.wa2.g13.document_store.util.exceptions.DocumentNotFoundException
 import it.polito.wa2.g13.document_store.util.nullable
@@ -25,15 +29,15 @@ class DocumentServiceImpl(private val documentRepository: DocumentRepository) : 
         return documentRepository.findAll(PageRequest.of(pageNumber, limit)).map(DocumentMetadataDTO::from).toList()
     }
 
-    override fun getDocumentMetadataById(metadataId: Long): DocumentMetadataDTO {
-        return documentRepository.getDocumentMetadataById(metadataId)?.let { DocumentMetadataDTO.from(it) }
-            ?: throw DocumentNotFoundException("Document $metadataId does not exists")
+    override fun getDocumentMetadataById(metadataId: Long): Result<DocumentMetadataDTO, DocumentError> {
+        return documentRepository.getDocumentMetadataById(metadataId)?.let { Ok(DocumentMetadataDTO.from(it)) }
+            ?: Err(DocumentError.NotFound("Document $metadataId does not exists"))
     }
 
-    override fun getDocumentBytes(metadataId: Long): String {
+    override fun getDocumentBytes(metadataId: Long): Result<String, DocumentError> {
         return documentRepository.findById(metadataId).nullable()
-            ?.let { Base64.getEncoder().encodeToString(it.fileBytes.file) }
-            ?: throw DocumentNotFoundException("Document $metadataId does not exists")
+            ?.let { Ok(Base64.getEncoder().encodeToString(it.fileBytes.file)) }
+            ?: Err(DocumentError.NotFound("Document $metadataId does not exists"))
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED)
