@@ -13,10 +13,8 @@ Content-Disposition: form-data; name="file"; filename="testdoc_1"
 // The file will be uploaded
 < ./build.gradle.kts
 --boundary
-Content-Disposition: form-data; name="advertType"
 
 1
---boundary
 
 ###
 # Test addDocument() -> add testdoc_2
@@ -29,10 +27,8 @@ Content-Disposition: form-data; name="file"; filename="testdoc_2"
 // The file will be uploaded
 < ./settings.gradle.kts
 --boundary
-Content-Disposition: form-data; name="advertType"
 
 1
---boundary
 
 ###
 # Test addDocument() -> add testdoc_3
@@ -45,10 +41,9 @@ Content-Disposition: form-data; name="file"; filename="testdoc_3"
 // The file will be uploaded
 < ./gradlew.bat
 --boundary
-Content-Disposition: form-data; name="advertType"
 
 1
---boundary
+
 
 ###
 # Test addDocument() -> fail to add document with already existing filename
@@ -61,10 +56,8 @@ Content-Disposition: form-data; name="file"; filename="testdoc_3"
 // The file will be uploaded
 < ./gradlew.bat
 --boundary
-Content-Disposition: form-data; name="advertType"
 
 1
---boundary
 
 ###
 # Test getAllDocuments() -> return all documents [1,2,3]
@@ -97,10 +90,8 @@ Content-Disposition: form-data; name="file"; filename="superfile"
 // The 'input.txt' file will be uploaded
 < ./compose.yaml
 --boundary
-Content-Disposition: form-data; name="advertType"
 
 1
---boundary
 
 ###
 # Test updateDocument() -> fail to update a file that does not exists
@@ -113,10 +104,8 @@ Content-Disposition: form-data; name="file"; filename="superfile"
 // The 'input.txt' file will be uploaded
 < ./compose.yaml
 --boundary
-Content-Disposition: form-data; name="advertType"
 
 1
---boundary
 
 ###
 # Test deleteDocument() -> delete file with id = 3
