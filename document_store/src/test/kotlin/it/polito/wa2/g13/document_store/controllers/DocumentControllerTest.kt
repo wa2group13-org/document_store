@@ -9,9 +9,14 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.client.TestRestTemplate
+import org.springframework.boot.test.web.client.exchange
 import org.springframework.boot.test.web.client.getForEntity
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection
+import org.springframework.http.HttpEntity
+import org.springframework.http.HttpStatus
+import org.springframework.http.HttpStatusCode
 import org.springframework.http.MediaType
+import org.springframework.http.ProblemDetail
 import org.springframework.http.RequestEntity
 import org.springframework.http.client.MultipartBodyBuilder
 import org.springframework.test.annotation.Rollback
@@ -84,11 +89,43 @@ class DocumentControllerTest {
         Assertions.assertTrue(response.statusCode.is2xxSuccessful)
     }
 
+    // getAllDocuments
+    //
     @Test
-    fun get() {
+    fun `getAllDocuments should return all the documents`() {
         val response = restTemplate.getForEntity<List<DocumentMetadataDTO>>("$ENDPOINT?pageNumber=0&limit=10")
 
         Assertions.assertTrue(response.statusCode.is2xxSuccessful)
         Assertions.assertEquals(response.body?.size, 1)
     }
+
+    @Test
+    @Rollback
+    fun `getAllDocuments should return an empty list`() {
+        restTemplate.delete("$ENDPOINT/1")
+        val response = restTemplate.getForEntity<List<DocumentMetadataDTO>>("$ENDPOINT?pageNumber=0&limit=10")
+
+        Assertions.assertTrue(response.statusCode.is2xxSuccessful)
+    }
+    //
+
+    // getDocumentDetails
+    //
+    @Test
+    fun `getDocumentDetails should return the details of a document`(){
+        val response = restTemplate.getForEntity<DocumentMetadataDTO>("$ENDPOINT/1")
+
+        Assertions.assertTrue(response.statusCode.is2xxSuccessful)
+        Assertions.assertNotNull(response.body)
+    }
+
+    @Test
+    fun `getDocumentDetails should fail if document does not exists`(){
+        val response = restTemplate.getForEntity<ProblemDetail>("$ENDPOINT/42")
+
+        Assertions.assertTrue(response.statusCode.is4xxClientError)
+    }
+    //
+
+
 }
