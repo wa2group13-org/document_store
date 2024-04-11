@@ -121,10 +121,10 @@ class DocumentControllerTest {
     }
     //
 
-    // getDocumentDetails
+    // getDocument
     //
     @Test
-    fun `getDocumentDetails should return the details of a document`() {
+    fun `getDocument should return the details of a document`() {
         val response = restTemplate.getForEntity<DocumentMetadataDTO>("$ENDPOINT/1")
 
         Assertions.assertTrue(response.statusCode.is2xxSuccessful)
@@ -132,7 +132,7 @@ class DocumentControllerTest {
     }
 
     @Test
-    fun `getDocumentDetails should fail if document does not exists`() {
+    fun `getDocument should fail if document does not exists`() {
         val response = restTemplate.getForEntity<ProblemDetail>("$ENDPOINT/42")
 
         Assertions.assertTrue(response.statusCode.is4xxClientError)

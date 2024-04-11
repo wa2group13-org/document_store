@@ -26,13 +26,13 @@ class DocumentServiceImpl(private val documentRepository: DocumentRepository) : 
 
     override fun getDocumentMetadataById(metadataId: Long): Result<DocumentMetadataDTO, DocumentError> {
         return documentRepository.getDocumentMetadataById(metadataId)?.let { Ok(DocumentMetadataDTO.from(it)) }
-            ?: Err(DocumentError.NotFound("Document $metadataId does not exists"))
+            ?: Err(DocumentError.NotFound("Document with Id\"$metadataId\" does not exists"))
     }
 
     override fun getDocumentBytes(metadataId: Long): Result<String, DocumentError> {
         return documentRepository.findById(metadataId).nullable()
             ?.let { Ok(Base64.getEncoder().encodeToString(it.fileBytes.file)) }
-            ?: Err(DocumentError.NotFound("Document $metadataId does not exists"))
+            ?: Err(DocumentError.NotFound("Document with Id \"$metadataId\" does not exists"))
     }
 
     override fun saveDocument(document: UserDocumentDTO): Result<Long, DocumentError> {
@@ -71,7 +71,7 @@ class DocumentServiceImpl(private val documentRepository: DocumentRepository) : 
             logger.info("Deleted Document with Id \"$metadataId\".")
             Ok(Unit)
         } else {
-            val msg = "Document with id \"${metadataId}\" does not exist."
+            val msg = "Document with Id \"${metadataId}\" does not exists."
             logger.error(msg)
             Err(DocumentError.NotFound(msg))
         }

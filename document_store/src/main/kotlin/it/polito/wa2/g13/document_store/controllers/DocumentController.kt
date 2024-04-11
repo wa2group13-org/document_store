@@ -32,7 +32,7 @@ class DocumentController(
 
     @GetMapping("{metadataId}")
     @DocumentResult
-    fun getDocumentDetails(
+    fun getDocument(
         @PathVariable("metadataId") metadataId: Long
     ): Any {
         return documentService.getDocumentMetadataById(metadataId).map {
@@ -72,7 +72,7 @@ class DocumentController(
 
     @PutMapping("{metadataId}")
     @DocumentResult
-    fun updateDocumentDetails(
+    fun updateDocument(
         @PathVariable("metadataId") metadataId: Long,
         @RequestParam("file") file: MultipartFile
     ): Any {
@@ -93,7 +93,7 @@ class DocumentController(
 
     @DeleteMapping("{metadataId}")
     @DocumentResult
-    fun deleteDocumentDetails(@PathVariable("metadataId") metadataId: Long): Any {
+    fun deleteDocument(@PathVariable("metadataId") metadataId: Long): Any {
         return documentService.deleteDocument(metadataId).map {
             ResponseEntity.ok().build<Unit>()
         }

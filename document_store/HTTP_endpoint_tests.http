@@ -1,0 +1,111 @@
+###
+# Test getAllDocuments() -> return an empty list
+GET http://localhost:8080/API/documents?pageNumber=0&limit=4
+
+###
+# Test addDocument() -> add testdoc_1
+POST http://localhost:8080/API/documents
+Content-Type: multipart/form-data; boundary=boundary
+
+--boundary
+Content-Disposition: form-data; name="file"; filename="testdoc_1"
+
+// The 'input.txt' file will be uploaded
+< ./build.gradle.kts
+--boundary
+Content-Disposition: form-data; name="advertType"
+
+1
+--boundary
+
+###
+# Test addDocument() -> add testdoc_2
+POST http://localhost:8080/API/documents
+Content-Type: multipart/form-data; boundary=boundary
+
+--boundary
+Content-Disposition: form-data; name="file"; filename="testdoc_2"
+
+// The 'input.txt' file will be uploaded
+< ./settings.gradle.kts
+--boundary
+Content-Disposition: form-data; name="advertType"
+
+1
+--boundary
+
+###
+# Test addDocument() -> add testdoc_3
+POST http://localhost:8080/API/documents
+Content-Type: multipart/form-data; boundary=boundary
+
+--boundary
+Content-Disposition: form-data; name="file"; filename="testdoc_3"
+
+// The 'input.txt' file will be uploaded
+< ./gradlew.bat
+--boundary
+Content-Disposition: form-data; name="advertType"
+
+1
+--boundary
+
+###
+# Test getAllDocuments() -> return all documents [1,2,3]
+GET http://localhost:8080/API/documents?pageNumber=0&limit=4
+
+###
+# Test getDocument() -> return document with id = 2
+GET http://localhost:8080/API/documents/2
+
+###
+# Test getDocument() -> fail to return a file that does not exists
+GET http://localhost:8080/API/documents/5
+
+###
+# Test getDocumentBytes() -> return the content of document with id = 2, encoded in base64
+GET http://localhost:8080/API/documents/2/data
+
+###
+# Test getDocumentBytes() -> fail to retrieve bytes of a file that does not exists
+GET http://localhost:8080/API/documents/5/data
+
+###
+# Test updateDocument() -> change testdoc_1 with id = 1 to another file called superfile
+PUT http://localhost:8080/API/documents/1
+Content-Type: multipart/form-data; boundary=boundary
+
+--boundary
+Content-Disposition: form-data; name="file"; filename="superfile"
+
+// The 'input.txt' file will be uploaded
+< ./compose.yaml
+--boundary
+Content-Disposition: form-data; name="advertType"
+
+1
+--boundary
+
+###
+# Test updateDocument() -> fail to update a file that does not exists
+PUT http://localhost:8080/API/documents/5
+Content-Type: multipart/form-data; boundary=boundary
+
+--boundary
+Content-Disposition: form-data; name="file"; filename="superfile"
+
+// The 'input.txt' file will be uploaded
+< ./compose.yaml
+--boundary
+Content-Disposition: form-data; name="advertType"
+
+1
+--boundary
+
+###
+# Test deleteDocument() -> delete file with id = 3
+DELETE http://localhost:8080/API/documents/3
+
+###
+# Test deleteDocument() -> fail to delete a file that does not exists
+DELETE http://localhost:8080/API/documents/5
