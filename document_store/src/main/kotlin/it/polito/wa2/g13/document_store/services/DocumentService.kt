@@ -14,7 +14,7 @@ interface DocumentService {
 
     fun saveDocument(document: UserDocumentDTO)
 
-    fun updateDocument(metadataId: Long, document: UserDocumentDTO)
+    fun updateDocument(metadataId: Long, document: UserDocumentDTO): Result<Unit, DocumentError>
 
     fun deleteDocument(metadataId: Long)
 }

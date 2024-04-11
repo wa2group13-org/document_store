@@ -64,7 +64,6 @@ class DocumentController(
     }
 
     @PutMapping("{metadataId}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
     @DocumentResult
     fun updateDocumentDetails(
         @PathVariable("metadataId") metadataId: Long,
@@ -73,14 +72,16 @@ class DocumentController(
         val document = UserDocumentDTO.from(file).let {
             when (it) {
                 is Ok -> it.t
-                is Err -> return Ok<ResponseEntity<*>,Any>(ResponseEntity.of(ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, it.err))
-                    .build<Any>())
+                is Err -> return Ok<ResponseEntity<*>, Any>(
+                    ResponseEntity.of(ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, it.err))
+                        .build<Any>()
+                )
             }
         }
 
-        documentService.updateDocument(metadataId, document)
-
-        return Ok<ResponseEntity<*>,Any>(ResponseEntity.noContent().build<Any>())
+        return documentService.updateDocument(metadataId, document).map {
+            ResponseEntity.noContent().build<Any>()
+        }
     }
 
     @DeleteMapping("{metadataId}")

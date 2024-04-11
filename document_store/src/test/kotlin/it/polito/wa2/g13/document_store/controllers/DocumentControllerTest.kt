@@ -73,6 +73,18 @@ class DocumentControllerTest {
                 .contentType(MediaType.MULTIPART_FORM_DATA)
                 .body(body)
         }
+
+        private fun multipartFileRequestBodyBuilder(
+            filename: String,
+            content: String = "Default file content"
+        ): Any {
+            return MultipartBodyBuilder().apply {
+                part("file", content.toByteArray()).header(
+                    "Content-Disposition",
+                    "form-data; name=file; filename=${filename}"
+                )
+            }.build()
+        }
     }
 
     @Autowired
@@ -112,7 +124,7 @@ class DocumentControllerTest {
     // getDocumentDetails
     //
     @Test
-    fun `getDocumentDetails should return the details of a document`(){
+    fun `getDocumentDetails should return the details of a document`() {
         val response = restTemplate.getForEntity<DocumentMetadataDTO>("$ENDPOINT/1")
 
         Assertions.assertTrue(response.statusCode.is2xxSuccessful)
@@ -120,12 +132,38 @@ class DocumentControllerTest {
     }
 
     @Test
-    fun `getDocumentDetails should fail if document does not exists`(){
+    fun `getDocumentDetails should fail if document does not exists`() {
         val response = restTemplate.getForEntity<ProblemDetail>("$ENDPOINT/42")
 
         Assertions.assertTrue(response.statusCode.is4xxClientError)
     }
     //
+
+
+    @Test
+    fun `it should update an existing document`() {
+
+        val body = multipartFileRequestBodyBuilder("super-file", "super-file")
+        val request = RequestEntity.put("$ENDPOINT/1")
+            .contentType(MediaType.MULTIPART_FORM_DATA)
+            .body(body)
+        val response = restTemplate.exchange(request, String::class.java)
+
+        Assertions.assertTrue(response.statusCode.is2xxSuccessful)
+    }
+
+    @Test
+    fun `it should not find the document`() {
+
+        val body = multipartFileRequestBodyBuilder("super-file", "super-file")
+        val request = RequestEntity.put("$ENDPOINT/58")
+            .contentType(MediaType.MULTIPART_FORM_DATA)
+            .body(body)
+        val response = restTemplate.exchange(request, String::class.java)
+
+        println(response)
+        Assertions.assertTrue(response.statusCode.is4xxClientError)
+    }
 
 
 }

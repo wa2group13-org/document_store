@@ -52,10 +52,9 @@ class DocumentServiceImpl(private val documentRepository: DocumentRepository) : 
         logger.info("Added new Document with Id \"$newId\".")
     }
 
-    @Transactional(isolation = Isolation.READ_COMMITTED)
-    override fun updateDocument(metadataId: Long, document: UserDocumentDTO) {
+    override fun updateDocument(metadataId: Long, document: UserDocumentDTO): Result<Unit, DocumentError> {
         val oldDocument = documentRepository.findById(metadataId).nullable()
-            ?: throw DocumentNotFoundException("Document with id \"$metadataId\" does not exists.")
+            ?: return Err<Unit, DocumentError>(DocumentError.NotFound("Document with id \"$metadataId\" does not exists."))
 
         documentRepository.save(DocumentMetadata.from(document).apply {
             this.id = metadataId
@@ -63,6 +62,7 @@ class DocumentServiceImpl(private val documentRepository: DocumentRepository) : 
         })
 
         logger.info("Updated Document with Id \"$metadataId\".")
+        return Ok<Unit, DocumentError>(Unit)
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED)
