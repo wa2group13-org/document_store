@@ -65,21 +65,22 @@ class DocumentController(
 
     @PutMapping("{metadataId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
+    @DocumentResult
     fun updateDocumentDetails(
         @PathVariable("metadataId") metadataId: Long,
         @RequestParam("file") file: MultipartFile
-    ): ResponseEntity<Unit> {
+    ): Any {
         val document = UserDocumentDTO.from(file).let {
             when (it) {
                 is Ok -> it.t
-                is Err -> return ResponseEntity.of(ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, it.err))
-                    .build()
+                is Err -> return Ok<ResponseEntity<*>,Any>(ResponseEntity.of(ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, it.err))
+                    .build<Any>())
             }
         }
 
         documentService.updateDocument(metadataId, document)
 
-        return ResponseEntity.noContent().build()
+        return Ok<ResponseEntity<*>,Any>(ResponseEntity.noContent().build<Any>())
     }
 
     @DeleteMapping("{metadataId}")
