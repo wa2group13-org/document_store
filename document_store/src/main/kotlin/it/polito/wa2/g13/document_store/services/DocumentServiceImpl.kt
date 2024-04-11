@@ -8,12 +8,10 @@ import it.polito.wa2.g13.document_store.repositories.DocumentRepository
 import it.polito.wa2.g13.document_store.util.Err
 import it.polito.wa2.g13.document_store.util.Ok
 import it.polito.wa2.g13.document_store.util.Result
-import it.polito.wa2.g13.document_store.util.exceptions.DocumentDuplicateException
 import it.polito.wa2.g13.document_store.util.exceptions.DocumentNotFoundException
 import it.polito.wa2.g13.document_store.util.nullable
 import org.slf4j.LoggerFactory
 import org.springframework.dao.DataIntegrityViolationException
-import org.springframework.dao.DataRetrievalFailureException
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Isolation
@@ -40,16 +38,17 @@ class DocumentServiceImpl(private val documentRepository: DocumentRepository) : 
             ?: Err(DocumentError.NotFound("Document $metadataId does not exists"))
     }
 
-    @Transactional(isolation = Isolation.READ_COMMITTED)
-    override fun saveDocument(document: UserDocumentDTO) {
+    override fun saveDocument(document: UserDocumentDTO): Result<Long, DocumentError> {
         val newId = try {
             val newDocument = documentRepository.save(DocumentMetadata.from(document))
             newDocument.id
         } catch (e: DataIntegrityViolationException) {
-            throw DocumentDuplicateException(e.message)
+            logger.error(e.message)
+            return Err(DocumentError.Duplicate(e.message!!))
         }
 
         logger.info("Added new Document with Id \"$newId\".")
+        return Ok(newId)
     }
 
     override fun updateDocument(metadataId: Long, document: UserDocumentDTO): Result<Unit, DocumentError> {
@@ -65,14 +64,15 @@ class DocumentServiceImpl(private val documentRepository: DocumentRepository) : 
         return Ok<Unit, DocumentError>(Unit)
     }
 
-    @Transactional(isolation = Isolation.READ_COMMITTED)
-    override fun deleteDocument(metadataId: Long) {
-        try {
+    override fun deleteDocument(metadataId: Long): Result<Unit, DocumentError> {
+        return if (documentRepository.existsById(metadataId)) {
             documentRepository.deleteById(metadataId)
-        } catch (e: DataRetrievalFailureException) {
-            throw DocumentNotFoundException(e.message)
+            logger.info("Deleted Document with Id \"$metadataId\".")
+            Ok(Unit)
+        } else {
+            val msg = "Document with id \"${metadataId}\" does not exist."
+            logger.error(msg)
+            Err(DocumentError.NotFound(msg))
         }
-
-        logger.info("Deleted Document with Id \"$metadataId\".")
     }
 }

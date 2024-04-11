@@ -6,11 +6,13 @@ import it.polito.wa2.g13.document_store.dtos.UserDocumentDTO
 import it.polito.wa2.g13.document_store.services.DocumentService
 import it.polito.wa2.g13.document_store.util.Err
 import it.polito.wa2.g13.document_store.util.Ok
+import jakarta.servlet.http.HttpServletRequest
 import org.springframework.http.HttpStatus
 import org.springframework.http.ProblemDetail
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
+import java.net.URI
 
 @RestController
 @RequestMapping("/API/documents")
@@ -49,18 +51,23 @@ class DocumentController(
     }
 
     @PostMapping("")
-    fun addDocument(@RequestParam("file") file: MultipartFile): ResponseEntity<Unit> {
+    @DocumentResult
+    fun addDocument(
+        request: HttpServletRequest,
+        @RequestParam("file") file: MultipartFile
+    ): Any {
         val document = UserDocumentDTO.from(file).let {
             when (it) {
                 is Ok -> it.t
-                is Err -> return ResponseEntity.of(ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, it.err))
-                    .build()
+                is Err -> return Ok<ResponseEntity<ProblemDetail>, ProblemDetail>(
+                    ResponseEntity.of(ProblemDetail.forStatusAndDetail(HttpStatus.UNPROCESSABLE_ENTITY, it.err)).build()
+                )
             }
         }
 
-        documentService.saveDocument(document)
-
-        return ResponseEntity.ok().build()
+        return documentService.saveDocument(document).map {
+            ResponseEntity.created(URI.create("${request.requestURI}/$it")).build<Unit>()
+        }
     }
 
     @PutMapping("{metadataId}")
@@ -85,8 +92,10 @@ class DocumentController(
     }
 
     @DeleteMapping("{metadataId}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    fun deleteDocumentDetails(@PathVariable("metadataId") metadataId: Long) {
-        documentService.deleteDocument(metadataId)
+    @DocumentResult
+    fun deleteDocumentDetails(@PathVariable("metadataId") metadataId: Long): Any {
+        return documentService.deleteDocument(metadataId).map {
+            ResponseEntity.ok().build<Unit>()
+        }
     }
 }
