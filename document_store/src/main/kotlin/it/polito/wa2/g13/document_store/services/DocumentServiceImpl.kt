@@ -8,14 +8,11 @@ import it.polito.wa2.g13.document_store.repositories.DocumentRepository
 import it.polito.wa2.g13.document_store.util.Err
 import it.polito.wa2.g13.document_store.util.Ok
 import it.polito.wa2.g13.document_store.util.Result
-import it.polito.wa2.g13.document_store.util.exceptions.DocumentNotFoundException
 import it.polito.wa2.g13.document_store.util.nullable
 import org.slf4j.LoggerFactory
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Isolation
-import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
 @Service
@@ -53,15 +50,19 @@ class DocumentServiceImpl(private val documentRepository: DocumentRepository) : 
 
     override fun updateDocument(metadataId: Long, document: UserDocumentDTO): Result<Unit, DocumentError> {
         val oldDocument = documentRepository.findById(metadataId).nullable()
-            ?: return Err<Unit, DocumentError>(DocumentError.NotFound("Document with id \"$metadataId\" does not exists."))
+            ?: return Err(DocumentError.NotFound("Document with id \"$metadataId\" does not exists."))
 
-        documentRepository.save(DocumentMetadata.from(document).apply {
-            this.id = metadataId
-            this.fileBytes.id = oldDocument.fileBytes.id
-        })
+        oldDocument.apply {
+            this.name = document.name
+            this.size = document.size
+            this.contentType = document.contentType
+            this.fileBytes.file = document.bytes.toByteArray()
+        }
+
+        documentRepository.save(oldDocument)
 
         logger.info("Updated Document with Id \"$metadataId\".")
-        return Ok<Unit, DocumentError>(Unit)
+        return Ok(Unit)
     }
 
     override fun deleteDocument(metadataId: Long): Result<Unit, DocumentError> {
