@@ -10,7 +10,7 @@ Content-Type: multipart/form-data; boundary=boundary
 --boundary
 Content-Disposition: form-data; name="file"; filename="testdoc_1"
 
-// The 'input.txt' file will be uploaded
+// The file will be uploaded
 < ./build.gradle.kts
 --boundary
 Content-Disposition: form-data; name="advertType"
@@ -26,7 +26,7 @@ Content-Type: multipart/form-data; boundary=boundary
 --boundary
 Content-Disposition: form-data; name="file"; filename="testdoc_2"
 
-// The 'input.txt' file will be uploaded
+// The file will be uploaded
 < ./settings.gradle.kts
 --boundary
 Content-Disposition: form-data; name="advertType"
@@ -42,7 +42,23 @@ Content-Type: multipart/form-data; boundary=boundary
 --boundary
 Content-Disposition: form-data; name="file"; filename="testdoc_3"
 
-// The 'input.txt' file will be uploaded
+// The file will be uploaded
+< ./gradlew.bat
+--boundary
+Content-Disposition: form-data; name="advertType"
+
+1
+--boundary
+
+###
+# Test addDocument() -> fail to add document with already existing filename
+POST http://localhost:8080/API/documents
+Content-Type: multipart/form-data; boundary=boundary
+
+--boundary
+Content-Disposition: form-data; name="file"; filename="testdoc_3"
+
+// The file will be uploaded
 < ./gradlew.bat
 --boundary
 Content-Disposition: form-data; name="advertType"
@@ -105,6 +121,10 @@ Content-Disposition: form-data; name="advertType"
 ###
 # Test deleteDocument() -> delete file with id = 3
 DELETE http://localhost:8080/API/documents/3
+
+###
+# Test getAllDocuments() -> return all documents [1,2]
+GET http://localhost:8080/API/documents?pageNumber=0&limit=4
 
 ###
 # Test deleteDocument() -> fail to delete a file that does not exists
