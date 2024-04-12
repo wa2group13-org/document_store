@@ -22,8 +22,21 @@ import java.util.*
 @SpringBootTest
 @AutoConfigureMockMvc
 @Transactional
+//@Testcontainers
 class DocumentControllerTest {
     companion object {
+        // If we @Testcontainers we have to remember to remove the
+        // runtimeOnly("com.h2database:h2") dependency, because that will not
+        // be needed
+//        @JvmStatic
+//        @Container
+//        @ServiceConnection
+//        @Suppress("unused")
+//        val postgres = PostgreSQLContainer("postgres:16.2")
+//            .withDatabaseName("integration-test-db")
+//            .withUsername("test")
+//            .withPassword("test")
+
         @Suppress("unused")
         private val logger = LoggerFactory.getLogger(DocumentControllerTest::class.java)
 
