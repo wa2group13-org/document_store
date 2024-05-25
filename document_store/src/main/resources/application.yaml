@@ -1,0 +1,9 @@
+spring:
+  application:
+    name: document_store
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+  profiles:
+    active: dev

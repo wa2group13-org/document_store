@@ -44,7 +44,7 @@ class DocumentServiceImpl(private val documentRepository: DocumentRepository) : 
             return Err(DocumentError.Duplicate(e.message!!))
         }
 
-        logger.info("Added new Document with Id \"$newId\".")
+        logger.info("Saved ${DocumentMetadata::class.qualifiedName}@$newId")
         return Ok(newId)
     }
 

@@ -49,16 +49,14 @@ class DocumentControllerTest {
             return MultipartBodyBuilder().apply {
                 part("file", content.toByteArray())
                     .contentType(MediaType.TEXT_PLAIN)
-                    .header(
-                        "Content-Disposition",
-                        "form-data; name=file; filename=${filename}"
-                    )
+                    .filename(filename)
             }.build()
         }
 
         private fun createDocument(name: String = "test", bytes: String = "Default file content"): DocumentMetadata {
             return DocumentMetadata(
                 0,
+                null,
                 name,
                 0,
                 "*/*",

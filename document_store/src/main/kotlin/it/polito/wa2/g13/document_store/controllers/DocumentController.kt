@@ -54,9 +54,10 @@ class DocumentController(
     @DocumentResult
     fun addDocument(
         request: HttpServletRequest,
-        @RequestParam("file") file: MultipartFile
+        @RequestPart("file") file: MultipartFile,
+        @RequestPart("messageId") messageId: Long?,
     ): Any {
-        val document = UserDocumentDTO.from(file).let {
+        val document = UserDocumentDTO.from(file, messageId).let {
             when (it) {
                 is Ok -> it.t
                 is Err -> return Ok<ResponseEntity<ProblemDetail>, ProblemDetail>(
@@ -74,9 +75,10 @@ class DocumentController(
     @DocumentResult
     fun updateDocument(
         @PathVariable("metadataId") metadataId: Long,
-        @RequestParam("file") file: MultipartFile
+        @RequestPart("file") file: MultipartFile,
+        @RequestPart("messageId") messageId: Long?,
     ): Any {
-        val document = UserDocumentDTO.from(file).let {
+        val document = UserDocumentDTO.from(file, messageId).let {
             when (it) {
                 is Ok -> it.t
                 is Err -> return Ok<ResponseEntity<*>, Any>(

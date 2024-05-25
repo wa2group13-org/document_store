@@ -14,6 +14,11 @@ class DocumentMetadata(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long,
+
+    /**
+     * References if this file is part of a message in the CRM service
+     */
+    var messageId: Long?,
     @Column(unique = true)
     var name: String,
     var size: Long,
@@ -32,6 +37,7 @@ class DocumentMetadata(
             val bytes = DocumentFile(0, file.bytes.toByteArray())
             return DocumentMetadata(
                 0,
+                file.messageId,
                 file.name,
                 file.size,
                 file.contentType,
