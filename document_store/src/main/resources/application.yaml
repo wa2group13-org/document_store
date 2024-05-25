@@ -7,3 +7,7 @@ spring:
     open-in-view: false
   profiles:
     active: dev
+  servlet:
+    multipart:
+      max-file-size: ${MULTIPART_MAX_FILE_SIZE:1MB}
+      max-request-size: ${MULTIPART_MAX_REQUEST_SIZE:10MB}
