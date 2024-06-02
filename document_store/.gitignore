@@ -40,4 +40,4 @@ out/
 .kotlin
 
 ### Production ###
-publish.sh
+secrets.sh
