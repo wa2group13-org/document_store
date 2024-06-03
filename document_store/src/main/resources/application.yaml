@@ -6,7 +6,9 @@ spring:
       ddl-auto: update
     open-in-view: false
   profiles:
-    active: dev
+    active:
+      - dev
+      - no-security
   servlet:
     multipart:
       max-file-size: ${MULTIPART_MAX_FILE_SIZE:1MB}
