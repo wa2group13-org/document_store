@@ -12,3 +12,8 @@ server:
   error:
     include-message: always
     include-binding-errors: always
+
+spring:
+  kafka:
+    consumer:
+      bootstrap-servers: 127.0.0.1:9092

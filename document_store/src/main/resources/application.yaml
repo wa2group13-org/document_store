@@ -6,8 +6,21 @@ spring:
       ddl-auto: update
     open-in-view: false
   profiles:
-    active: dev
+    active:
+      - dev
+      - no-security
   servlet:
     multipart:
       max-file-size: ${MULTIPART_MAX_FILE_SIZE:1MB}
       max-request-size: ${MULTIPART_MAX_REQUEST_SIZE:10MB}
+
+  kafka:
+    consumer:
+      group-id: crm-consumer
+      auto-offset-reset: earliest
+      key-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: it.polito.wa2.g13.communication_manager.dtos
+        # This is need to convert the producing type to the consuming type
+        spring.json.type.mapping: it.polito.wa2.g13.communication_manager.dtos.CreateAttachmentDTO:it.polito.wa2.g13.document_store.dtos.CreateAttachmentDTO

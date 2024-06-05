@@ -18,7 +18,7 @@ class DocumentMetadata(
     /**
      * References if this file is part of a message in the CRM service
      */
-    var messageId: Long?,
+    var mailId: String?,
     @Column(unique = true)
     var name: String,
     var size: Long,
@@ -36,13 +36,13 @@ class DocumentMetadata(
         fun from(file: UserDocumentDTO): DocumentMetadata {
             val bytes = DocumentFile(0, file.bytes.toByteArray())
             return DocumentMetadata(
-                0,
-                file.messageId,
-                file.name,
-                file.size,
-                file.contentType,
-                Calendar.getInstance().time,
-                bytes
+                id = 0,
+                mailId = file.mailId,
+                name = file.name,
+                size = file.size,
+                contentType = file.contentType,
+                creationTimestamp = Calendar.getInstance().time,
+                fileBytes = bytes,
             )
         }
     }
