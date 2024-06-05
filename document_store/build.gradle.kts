@@ -11,7 +11,7 @@ plugins {
 }
 
 group = "it.polito.wa2.g13"
-version = "0.0.2-SNAPSHOT"
+version = "1.0.0"
 
 java {
     sourceCompatibility = JavaVersion.VERSION_21
@@ -31,12 +31,16 @@ repositories {
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-web")
-    implementation("org.springframework.boot:spring-boot-starter-webflux")
+    implementation("org.springframework.boot:spring-boot-starter-security")
+    implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
+
     developmentOnly("org.springframework.boot:spring-boot-docker-compose")
+
     runtimeOnly("com.h2database:h2")
     runtimeOnly("org.postgresql:postgresql")
+
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.boot:spring-boot-testcontainers")
     testImplementation("org.testcontainers:junit-jupiter")
@@ -64,3 +68,12 @@ tasks.named<BootBuildImage>("bootBuildImage") {
         }
     }
 }
+
+abstract class ProjectVersion : DefaultTask() {
+    @TaskAction
+    fun action() {
+        print(project.version)
+    }
+}
+
+tasks.register<ProjectVersion>("projectVersion")
