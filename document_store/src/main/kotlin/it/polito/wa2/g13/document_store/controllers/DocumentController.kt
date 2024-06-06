@@ -101,6 +101,8 @@ class DocumentController(
     @GetMapping("mailId/{mailId}")
     @DocumentResult
     fun getDocumentByMailId(@PathVariable("mailId") mailId: String): Any {
-        return documentService.getDocumentByMailId(mailId)
+        return documentService.getDocumentByMailId(mailId).map {
+            ResponseEntity.ok(it)
+        }
     }
 }
