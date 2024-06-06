@@ -10,6 +10,7 @@ import java.util.*
  */
 @Suppress("unused")
 @Entity
+@Table(indexes = [Index(columnList = "mailId", unique = false)])
 class DocumentMetadata(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -18,6 +19,7 @@ class DocumentMetadata(
     /**
      * References if this file is part of a message in the CRM service
      */
+    @Column(updatable = false)
     var mailId: String?,
     @Column(unique = true)
     var name: String,

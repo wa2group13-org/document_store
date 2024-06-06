@@ -40,7 +40,7 @@ data class UserDocumentDTO(
             name = attachment.filename,
             contentType = attachment.contentType,
             size = attachment.bytes.size.toLong(),
-            bytes = attachment.bytes
+            bytes = attachment.bytes.toList(),
         )
     }
 }

@@ -24,3 +24,6 @@ spring:
         spring.json.trusted.packages: it.polito.wa2.g13.communication_manager.dtos
         # This is need to convert the producing type to the consuming type
         spring.json.type.mapping: it.polito.wa2.g13.communication_manager.dtos.CreateAttachmentDTO:it.polito.wa2.g13.document_store.dtos.CreateAttachmentDTO
+
+kafka-config:
+  attachment-topic: ${ATTACHMENT_TOPIC:attachment.json}

@@ -19,9 +19,6 @@ import java.net.URI
 class DocumentController(
     private val documentService: DocumentService,
 ) {
-
-//    private val logger = LoggerFactory.getLogger(DocumentController::class.java)
-
     @GetMapping("")
     fun getAllDocuments(
         @RequestParam("pageNumber") pageNumber: Int,
@@ -98,6 +95,14 @@ class DocumentController(
     fun deleteDocument(@PathVariable("metadataId") metadataId: Long): Any {
         return documentService.deleteDocument(metadataId).map {
             ResponseEntity.ok().build<Unit>()
+        }
+    }
+
+    @GetMapping("mailId/{mailId}")
+    @DocumentResult
+    fun getDocumentByMailId(@PathVariable("mailId") mailId: String): Any {
+        return documentService.getDocumentByMailId(mailId).map {
+            ResponseEntity.ok(it)
         }
     }
 }

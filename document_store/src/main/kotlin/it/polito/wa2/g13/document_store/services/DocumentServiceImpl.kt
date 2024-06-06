@@ -76,4 +76,14 @@ class DocumentServiceImpl(private val documentRepository: DocumentRepository) : 
             Err(DocumentError.NotFound(msg))
         }
     }
+
+    override fun getDocumentByMailId(mailId: String): Result<DocumentMetadataDTO, DocumentError> {
+        return documentRepository.findByMailId(mailId)
+            ?.let { Ok(DocumentMetadataDTO.from(it)) }
+            ?: Err(
+                DocumentError.NotFound(
+                    "Document with mailId@${mailId} does not exists."
+                )
+            )
+    }
 }

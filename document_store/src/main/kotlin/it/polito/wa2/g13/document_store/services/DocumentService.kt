@@ -24,4 +24,9 @@ interface DocumentService {
      * from the DB.
      */
     fun deleteDocument(metadataId: Long): Result<Unit, DocumentError>
+
+    /**
+     * Get a [it.polito.wa2.g13.document_store.data.DocumentMetadata] by the [mailId] field
+     */
+    fun getDocumentByMailId(mailId: String): Result<DocumentMetadataDTO, DocumentError>
 }
