@@ -11,5 +11,7 @@ interface DocumentRepository : JpaRepository<DocumentMetadata, Long> {
 
     fun findFirstByName(name: String): DocumentMetadata?
 
+    fun existsByName(name: String): Boolean
+
     fun findByMailId(mailId: String): DocumentMetadata?
 }

@@ -5,6 +5,7 @@ import it.polito.wa2.g13.document_store.data.DocumentFile
 import it.polito.wa2.g13.document_store.data.DocumentMetadata
 import it.polito.wa2.g13.document_store.dtos.DocumentMetadataDTO
 import it.polito.wa2.g13.document_store.repositories.DocumentRepository
+import it.polito.wa2.g13.document_store.util.ResultPage
 import it.polito.wa2.g13.document_store.util.nullable
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions
@@ -83,24 +84,24 @@ class DocumentControllerTest : IntegrationTest() {
     fun `getAllDocuments should return all the documents`() {
         documentRepository.save(createDocument("test1"))
 
-        val res = testTemplate.exchange<List<Any>>(
+        val res = testTemplate.exchange<ResultPage<Any>>(
             RequestEntity
                 .get("$ENDPOINT?pageNumber=0&limit=10")
                 .build()
         )
 
-        assertEquals(1, res.body?.size)
+        assertEquals(1, res.body?.numberOfElements)
     }
 
     @Test
     fun `getAllDocuments should return an empty list`() {
-        val res = testTemplate.exchange<List<Any>>(
+        val res = testTemplate.exchange<ResultPage<Any>>(
             RequestEntity
                 .get("$ENDPOINT?pageNumber=0&limit=10")
                 .build()
         )
 
-        assertEquals(0, res.body?.size)
+        assertEquals(0, res.body?.numberOfElements)
     }
 
 

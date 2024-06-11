@@ -2,55 +2,56 @@ package it.polito.wa2.g13.document_store.services
 
 import it.polito.wa2.g13.document_store.aspects.DocumentError
 import it.polito.wa2.g13.document_store.data.DocumentMetadata
+import it.polito.wa2.g13.document_store.dtos.DocumentFileDTO
 import it.polito.wa2.g13.document_store.dtos.DocumentMetadataDTO
 import it.polito.wa2.g13.document_store.dtos.UserDocumentDTO
 import it.polito.wa2.g13.document_store.repositories.DocumentRepository
 import it.polito.wa2.g13.document_store.util.Err
 import it.polito.wa2.g13.document_store.util.Ok
-import it.polito.wa2.g13.document_store.util.Result
-import it.polito.wa2.g13.document_store.util.nullable
+import it.polito.wa2.g13.document_store.util.exceptions.DocumentException
 import org.slf4j.LoggerFactory
-import org.springframework.dao.DataIntegrityViolationException
+import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
-import java.util.*
 
 @Service
 class DocumentServiceImpl(private val documentRepository: DocumentRepository) : DocumentService {
 
     private val logger = LoggerFactory.getLogger(DocumentServiceImpl::class.java)
 
-    override fun getDocumentByPage(pageNumber: Int, limit: Int): List<DocumentMetadataDTO> {
-        return documentRepository.findAll(PageRequest.of(pageNumber, limit)).map(DocumentMetadataDTO::from).toList()
+    override fun getDocumentByPage(pageNumber: Int, limit: Int): Page<DocumentMetadataDTO> {
+        return documentRepository.findAll(PageRequest.of(pageNumber, limit)).map(DocumentMetadataDTO::from)
     }
 
-    override fun getDocumentMetadataById(metadataId: Long): Result<DocumentMetadataDTO, DocumentError> {
-        return documentRepository.getDocumentMetadataById(metadataId)?.let { Ok(DocumentMetadataDTO.from(it)) }
-            ?: Err(DocumentError.NotFound("Document with Id\"$metadataId\" does not exists"))
+    override fun getDocumentMetadataById(metadataId: Long): DocumentMetadataDTO {
+        return documentRepository.getDocumentMetadataById(metadataId)
+            ?.let { DocumentMetadataDTO.from(it) }
+            ?: throw DocumentException.NotFound.from(metadataId)
     }
 
-    override fun getDocumentBytes(metadataId: Long): Result<String, DocumentError> {
-        return documentRepository.findById(metadataId).nullable()
-            ?.let { Ok(Base64.getEncoder().encodeToString(it.fileBytes.file)) }
-            ?: Err(DocumentError.NotFound("Document with Id \"$metadataId\" does not exists"))
+    override fun getDocumentBytes(metadataId: Long): DocumentFileDTO {
+        return documentRepository.findByIdOrNull(metadataId)
+            ?.let { DocumentFileDTO.from(it.fileBytes) }
+            ?: throw DocumentException.NotFound.from(metadataId)
     }
 
-    override fun saveDocument(document: UserDocumentDTO): Result<Long, DocumentError> {
-        val newId = try {
-            val newDocument = documentRepository.save(DocumentMetadata.from(document))
-            newDocument.id
-        } catch (e: DataIntegrityViolationException) {
-            logger.error(e.message)
-            return Err(DocumentError.Duplicate(e.message!!))
+    override fun saveDocument(documentDto: UserDocumentDTO): DocumentMetadataDTO {
+        val document = DocumentMetadata.from(documentDto)
+
+        if (documentRepository.existsByName(document.name)) {
+            throw DocumentException.Duplicate.from(document.name)
         }
 
-        logger.info("Saved ${DocumentMetadata::class.qualifiedName}@$newId")
-        return Ok(newId)
+        val newDocument = documentRepository.save(document)
+
+        logger.info("Saved ${DocumentMetadata::class.qualifiedName}@$${newDocument.id}")
+        return DocumentMetadataDTO.from(newDocument)
     }
 
-    override fun updateDocument(metadataId: Long, document: UserDocumentDTO): Result<Unit, DocumentError> {
-        val oldDocument = documentRepository.findById(metadataId).nullable()
-            ?: return Err(DocumentError.NotFound("Document with id \"$metadataId\" does not exists."))
+    override fun updateDocument(metadataId: Long, document: UserDocumentDTO): DocumentMetadataDTO {
+        val oldDocument = documentRepository.findByIdOrNull(metadataId)
+            ?: throw DocumentException.NotFound.from(metadataId)
 
         oldDocument.apply {
             this.name = document.name
@@ -59,31 +60,23 @@ class DocumentServiceImpl(private val documentRepository: DocumentRepository) : 
             this.fileBytes.file = document.bytes.toByteArray()
         }
 
-        documentRepository.save(oldDocument)
+        val updatedDocument = documentRepository.save(oldDocument)
 
         logger.info("Updated Document with Id \"$metadataId\".")
-        return Ok(Unit)
+        return DocumentMetadataDTO.from(updatedDocument)
     }
 
-    override fun deleteDocument(metadataId: Long): Result<Unit, DocumentError> {
-        return if (documentRepository.existsById(metadataId)) {
-            documentRepository.deleteById(metadataId)
-            logger.info("Deleted Document with Id \"$metadataId\".")
-            Ok(Unit)
-        } else {
-            val msg = "Document with Id \"${metadataId}\" does not exists."
-            logger.error(msg)
-            Err(DocumentError.NotFound(msg))
-        }
+    override fun deleteDocument(metadataId: Long) {
+        if (!documentRepository.existsById(metadataId))
+            throw DocumentException.NotFound.from(metadataId)
+
+        documentRepository.deleteById(metadataId)
+        logger.info("Deleted Document with Id \"$metadataId\".")
     }
 
-    override fun getDocumentByMailId(mailId: String): Result<DocumentMetadataDTO, DocumentError> {
+    override fun getDocumentByMailId(mailId: String): DocumentMetadataDTO {
         return documentRepository.findByMailId(mailId)
-            ?.let { Ok(DocumentMetadataDTO.from(it)) }
-            ?: Err(
-                DocumentError.NotFound(
-                    "Document with mailId@${mailId} does not exists."
-                )
-            )
+            ?.let { DocumentMetadataDTO.from(it) }
+            ?: throw DocumentException.NotFound("${DocumentMetadata::class.qualifiedName} with mailId@${mailId} was not found")
     }
 }

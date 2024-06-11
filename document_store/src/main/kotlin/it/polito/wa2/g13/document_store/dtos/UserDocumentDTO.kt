@@ -1,10 +1,6 @@
 package it.polito.wa2.g13.document_store.dtos
 
-import it.polito.wa2.g13.document_store.util.Err
-import it.polito.wa2.g13.document_store.util.Ok
-import it.polito.wa2.g13.document_store.util.Result
-import it.polito.wa2.g13.document_store.data.DocumentMetadata
-import it.polito.wa2.g13.document_store.data.DocumentFile
+import it.polito.wa2.g13.document_store.util.exceptions.DocumentException
 import org.springframework.web.multipart.MultipartFile
 
 /**
@@ -19,18 +15,16 @@ data class UserDocumentDTO(
 ) {
     companion object {
         @JvmStatic
-        fun from(file: MultipartFile, mailId: String?): Result<UserDocumentDTO, String> {
-            if (file.originalFilename?.length == 0)
-                return Err("Missing `filename`.")
+        fun from(file: MultipartFile, mailId: String?): UserDocumentDTO {
+            if (file.originalFilename == null || file.originalFilename!!.isEmpty())
+                throw DocumentException.Validation.from("filename is empty!")
 
-            return Ok(
-                UserDocumentDTO(
-                    mailId = mailId,
-                    name = file.originalFilename ?: return Err("Missing `filename`."),
-                    contentType = file.contentType ?: return Err("Missing `contentType`."),
-                    size = file.size,
-                    bytes = file.bytes.toList(),
-                )
+            return UserDocumentDTO(
+                mailId = mailId,
+                name =file.originalFilename!!,
+                contentType = file.contentType ?: throw DocumentException.Validation.from("contentType is empty"),
+                size =file.size,
+                bytes =file.bytes.toList(),
             )
         }
 
