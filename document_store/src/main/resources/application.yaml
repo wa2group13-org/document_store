@@ -27,3 +27,10 @@ spring:
 
 kafka-config:
   attachment-topic: ${ATTACHMENT_TOPIC:attachment.json}
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: ${EUREKA_URI:http://localhost:8761/eureka}
+  instance:
+    preferIpAddress: true
