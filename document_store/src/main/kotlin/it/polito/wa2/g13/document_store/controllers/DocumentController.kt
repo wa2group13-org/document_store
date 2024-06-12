@@ -1,14 +1,12 @@
 package it.polito.wa2.g13.document_store.controllers
 
-import it.polito.wa2.g13.document_store.aspects.DocumentResult
+import it.polito.wa2.g13.document_store.dtos.DocumentFileDTO
 import it.polito.wa2.g13.document_store.dtos.DocumentMetadataDTO
 import it.polito.wa2.g13.document_store.dtos.UserDocumentDTO
 import it.polito.wa2.g13.document_store.services.DocumentService
-import it.polito.wa2.g13.document_store.util.Err
-import it.polito.wa2.g13.document_store.util.Ok
 import jakarta.servlet.http.HttpServletRequest
+import org.springframework.data.domain.Page
 import org.springframework.http.HttpStatus
-import org.springframework.http.ProblemDetail
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
@@ -20,89 +18,65 @@ class DocumentController(
     private val documentService: DocumentService,
 ) {
     @GetMapping("")
+    @ResponseStatus(HttpStatus.OK)
     fun getAllDocuments(
         @RequestParam("pageNumber") pageNumber: Int,
         @RequestParam("limit") limit: Int,
-    ): List<DocumentMetadataDTO> {
+    ): Page<DocumentMetadataDTO> {
         return documentService.getDocumentByPage(pageNumber, limit)
     }
 
     @GetMapping("{metadataId}")
-    @DocumentResult
+    @ResponseStatus(HttpStatus.OK)
     fun getDocument(
         @PathVariable("metadataId") metadataId: Long
-    ): Any {
-        return documentService.getDocumentMetadataById(metadataId).map {
-            ResponseEntity.ok(it)
-        }
+    ): DocumentMetadataDTO {
+        return documentService.getDocumentMetadataById(metadataId)
     }
 
     @GetMapping("{metadataId}/data")
-    @DocumentResult
+    @ResponseStatus(HttpStatus.OK)
     fun getDocumentBytes(
         @PathVariable("metadataId") metadataId: Long
-    ): Any {
-        return documentService.getDocumentBytes(metadataId).map {
-            ResponseEntity.ok(it)
-        }
+    ): DocumentFileDTO {
+        return documentService.getDocumentBytes(metadataId)
     }
 
     @PostMapping("")
-    @DocumentResult
+    @ResponseStatus(HttpStatus.CREATED)
     fun addDocument(
         request: HttpServletRequest,
         @RequestPart("file") file: MultipartFile,
         @RequestPart("mailId") mailId: String?,
-    ): Any {
-        val document = UserDocumentDTO.from(file, mailId).let {
-            when (it) {
-                is Ok -> it.t
-                is Err -> return Ok<ResponseEntity<ProblemDetail>, ProblemDetail>(
-                    ResponseEntity.of(ProblemDetail.forStatusAndDetail(HttpStatus.UNPROCESSABLE_ENTITY, it.err)).build()
-                )
-            }
-        }
+    ): ResponseEntity<DocumentMetadataDTO> {
+        val document = UserDocumentDTO.from(file, mailId)
 
-        return documentService.saveDocument(document).map {
-            ResponseEntity.created(URI.create("${request.requestURI}/$it")).build<Unit>()
-        }
+        val documentDto = documentService.saveDocument(document)
+
+        return ResponseEntity.created(URI.create("${request.requestURI}/${documentDto.id}")).body(documentDto)
     }
 
     @PutMapping("{metadataId}")
-    @DocumentResult
+    @ResponseStatus(HttpStatus.OK)
     fun updateDocument(
         @PathVariable("metadataId") metadataId: Long,
         @RequestPart("file") file: MultipartFile,
         @RequestPart("mailId") mailId: String?,
-    ): Any {
-        val document = UserDocumentDTO.from(file, mailId).let {
-            when (it) {
-                is Ok -> it.t
-                is Err -> return Ok<ResponseEntity<*>, Any>(
-                    ResponseEntity.of(ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, it.err))
-                        .build<Any>()
-                )
-            }
-        }
+    ): DocumentMetadataDTO {
+        val documentDto = UserDocumentDTO.from(file, mailId)
 
-        return documentService.updateDocument(metadataId, document).map {
-            ResponseEntity.noContent().build<Any>()
-        }
+        return documentService.updateDocument(metadataId, documentDto)
     }
 
     @DeleteMapping("{metadataId}")
-    @DocumentResult
-    fun deleteDocument(@PathVariable("metadataId") metadataId: Long): Any {
-        return documentService.deleteDocument(metadataId).map {
-            ResponseEntity.ok().build<Unit>()
-        }
+    @ResponseStatus(HttpStatus.OK)
+    fun deleteDocument(@PathVariable("metadataId") metadataId: Long) {
+        return documentService.deleteDocument(metadataId)
     }
 
     @GetMapping("mailId/{mailId}")
-    @DocumentResult
-    fun getDocumentByMailId(@PathVariable("mailId") mailId: String): Any {
-        return documentService.getDocumentByMailId(mailId).map {
-            ResponseEntity.ok(it)
-        }
+    @ResponseStatus(HttpStatus.OK)
+    fun getDocumentByMailId(@PathVariable("mailId") mailId: String): DocumentMetadataDTO {
+        return documentService.getDocumentByMailId(mailId)
     }
 }
