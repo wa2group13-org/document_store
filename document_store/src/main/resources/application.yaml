@@ -9,6 +9,7 @@ spring:
     active:
       - dev
       - no-security
+      - api-docs
   servlet:
     multipart:
       max-file-size: ${MULTIPART_MAX_FILE_SIZE:1MB}
@@ -27,3 +28,23 @@ spring:
 
 kafka-config:
   attachment-topic: ${ATTACHMENT_TOPIC:attachment.json}
+
+# By default springdoc is disabled
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+
+server:
+  port: ${PORT:8080}
+
+openapi:
+  base-url: ${OPENAPI_BASE_URL:http://localhost:${server.port}}
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: ${EUREKA_URI:http://localhost:8761/eureka}
+  instance:
+    preferIpAddress: true
