@@ -28,5 +28,5 @@ interface DocumentService {
     /**
      * Get a [it.polito.wa2.g13.document_store.data.DocumentMetadata] by the [mailId] field
      */
-    fun getDocumentByMailId(mailId: String): DocumentMetadataDTO
+    fun getDocumentByMailId(mailId: String): List<DocumentMetadataDTO>
 }

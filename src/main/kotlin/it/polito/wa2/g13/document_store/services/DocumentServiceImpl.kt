@@ -1,13 +1,10 @@
 package it.polito.wa2.g13.document_store.services
 
-import it.polito.wa2.g13.document_store.aspects.DocumentError
 import it.polito.wa2.g13.document_store.data.DocumentMetadata
 import it.polito.wa2.g13.document_store.dtos.DocumentFileDTO
 import it.polito.wa2.g13.document_store.dtos.DocumentMetadataDTO
 import it.polito.wa2.g13.document_store.dtos.UserDocumentDTO
 import it.polito.wa2.g13.document_store.repositories.DocumentRepository
-import it.polito.wa2.g13.document_store.util.Err
-import it.polito.wa2.g13.document_store.util.Ok
 import it.polito.wa2.g13.document_store.util.exceptions.DocumentException
 import org.slf4j.LoggerFactory
 import org.springframework.data.domain.Page
@@ -74,9 +71,7 @@ class DocumentServiceImpl(private val documentRepository: DocumentRepository) : 
         logger.info("Deleted Document with Id \"$metadataId\".")
     }
 
-    override fun getDocumentByMailId(mailId: String): DocumentMetadataDTO {
-        return documentRepository.findByMailId(mailId)
-            ?.let { DocumentMetadataDTO.from(it) }
-            ?: throw DocumentException.NotFound("${DocumentMetadata::class.qualifiedName} with mailId@${mailId} was not found")
+    override fun getDocumentByMailId(mailId: String): List<DocumentMetadataDTO> {
+        return documentRepository.findAllByMailId(mailId).map { DocumentMetadataDTO.from(it) }
     }
 }
