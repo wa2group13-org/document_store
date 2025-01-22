@@ -159,25 +159,25 @@ class DocumentControllerTest : IntegrationTest() {
     }
 
     @Test
-    fun `should get a document by mailId`() {
+    fun `should get a documents by mailId`() {
         val document = documentRepository.save(createDocument())
 
-        val res = testTemplate.exchange<DocumentMetadataDTO>(
+        val res = testTemplate.exchange<List<DocumentMetadataDTO>>(
             RequestEntity.get("$ENDPOINT/mailId/${document.mailId}").build()
         ).body
 
         assertThat(res)
             .usingRecursiveComparison()
             .ignoringFields("creationTimestamp")
-            .isEqualTo(DocumentMetadataDTO.from(document))
+            .isEqualTo(listOf(DocumentMetadataDTO.from(document)))
     }
 
     @Test
-    fun `should return 404 when mailId does not exist`() {
-        val res = testTemplate.exchange<Any>(
+    fun `should return empty list when mailId does not exist`() {
+        val res = testTemplate.exchange<List<DocumentMetadataDTO>>(
             RequestEntity.get("$ENDPOINT/mailId/${UUID.randomUUID()}").build()
         )
 
-        assertEquals(404, res.statusCode.value())
+        assertEquals(listOf<DocumentMetadataDTO>(), res.body)
     }
 }

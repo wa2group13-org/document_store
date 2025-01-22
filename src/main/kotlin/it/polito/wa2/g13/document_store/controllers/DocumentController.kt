@@ -76,7 +76,7 @@ class DocumentController(
 
     @GetMapping("mailId/{mailId}")
     @ResponseStatus(HttpStatus.OK)
-    fun getDocumentByMailId(@PathVariable("mailId") mailId: String): DocumentMetadataDTO {
+    fun getDocumentByMailId(@PathVariable("mailId") mailId: String): List<DocumentMetadataDTO> {
         return documentService.getDocumentByMailId(mailId)
     }
 }

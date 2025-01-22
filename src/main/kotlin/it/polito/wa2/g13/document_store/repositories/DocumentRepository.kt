@@ -9,9 +9,7 @@ interface DocumentRepository : JpaRepository<DocumentMetadata, Long> {
 
     fun getDocumentMetadataById(id: Long): DocumentMetadata?
 
-    fun findFirstByName(name: String): DocumentMetadata?
-
     fun existsByName(name: String): Boolean
 
-    fun findByMailId(mailId: String): DocumentMetadata?
+    fun findAllByMailId(mailId: String): List<DocumentMetadata>
 }
