@@ -3,7 +3,9 @@ package it.polito.wa2.g13.document_store.controllers
 import it.polito.wa2.g13.document_store.IntegrationTest
 import it.polito.wa2.g13.document_store.data.DocumentFile
 import it.polito.wa2.g13.document_store.data.DocumentMetadata
+import it.polito.wa2.g13.document_store.dtos.DocumentFileDTO
 import it.polito.wa2.g13.document_store.dtos.DocumentMetadataDTO
+import it.polito.wa2.g13.document_store.repositories.DocumentFileRepository
 import it.polito.wa2.g13.document_store.repositories.DocumentRepository
 import it.polito.wa2.g13.document_store.util.ResultPage
 import it.polito.wa2.g13.document_store.util.nullable
@@ -11,7 +13,6 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.client.TestRestTemplate
@@ -23,8 +24,7 @@ import org.springframework.http.client.MultipartBodyBuilder
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.jdbc.Sql
 import org.springframework.util.MultiValueMap
-import java.time.LocalDateTime
-import java.time.ZoneOffset
+import java.time.ZonedDateTime
 import java.util.*
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -32,9 +32,6 @@ import java.util.*
 @ActiveProfiles("dev", "no-security")
 class DocumentControllerTest : IntegrationTest() {
     companion object {
-        @Suppress("unused")
-        private val logger = LoggerFactory.getLogger(DocumentControllerTest::class.java)
-
         private const val ENDPOINT = "/API/documents"
 
         private fun multipartFileRequestBodyBuilder(
@@ -55,14 +52,19 @@ class DocumentControllerTest : IntegrationTest() {
                 name,
                 0,
                 "*/*",
-                LocalDateTime.now().let { Date.from(it.toInstant(ZoneOffset.UTC)) },
-                DocumentFile(0, bytes.toByteArray())
-            )
+                ZonedDateTime.now(),
+                mutableSetOf(),
+            ).apply {
+                fileBytes.add(DocumentFile(0, this, 1, bytes.toByteArray()))
+            }
         }
     }
 
     @Autowired
     private lateinit var documentRepository: DocumentRepository
+
+    @Autowired
+    private lateinit var documentFileRepository: DocumentFileRepository
 
     @Autowired
     private lateinit var testTemplate: TestRestTemplate
@@ -136,16 +138,26 @@ class DocumentControllerTest : IntegrationTest() {
         val name = "super-file"
         val content = "super-file"
 
-        val doc = documentRepository.save(createDocument("test", "test"))
+        val r = testTemplate.exchange<DocumentMetadataDTO>(
+            RequestEntity.post(ENDPOINT).body(multipartFileRequestBodyBuilder("test", "test"))
+        )
 
-        testTemplate.exchange<Any>(
+        val doc = r.body!!
+
+        val res = testTemplate.exchange<Any>(
             RequestEntity.put("$ENDPOINT/${doc.id}").body(multipartFileRequestBodyBuilder(name, content))
+        )
+
+        assertEquals(true, res.statusCode.is2xxSuccessful)
+
+        val res3 = testTemplate.exchange<DocumentFileDTO>(
+            RequestEntity.get("$ENDPOINT/${doc.id}/data").build()
         )
 
         assertEquals(documentRepository.findById(doc.id).nullable()?.name, name)
         Assertions.assertArrayEquals(
-            documentRepository.findById(doc.id).nullable()?.fileBytes?.file,
-            content.toByteArray()
+            content.toByteArray(),
+            res3.body?.bytes
         )
     }
 

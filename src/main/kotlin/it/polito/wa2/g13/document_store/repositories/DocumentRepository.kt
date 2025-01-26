@@ -9,7 +9,5 @@ interface DocumentRepository : JpaRepository<DocumentMetadata, Long> {
 
     fun getDocumentMetadataById(id: Long): DocumentMetadata?
 
-    fun existsByName(name: String): Boolean
-
     fun findAllByMailId(mailId: String): List<DocumentMetadata>
 }

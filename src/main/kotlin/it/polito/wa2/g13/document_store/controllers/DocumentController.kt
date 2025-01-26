@@ -79,4 +79,13 @@ class DocumentController(
     fun getDocumentByMailId(@PathVariable("mailId") mailId: String): List<DocumentMetadataDTO> {
         return documentService.getDocumentByMailId(mailId)
     }
+
+    @GetMapping("{metadataId}/versions/{version}")
+    @ResponseStatus(HttpStatus.OK)
+    fun getDocumentByIdAndVersion(
+        @PathVariable metadataId: Long,
+        @PathVariable version: Long,
+    ): DocumentFileDTO {
+        return documentService.getDocumentVersion(metadataId, version)
+    }
 }

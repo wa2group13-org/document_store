@@ -1,11 +1,14 @@
 package it.polito.wa2.g13.document_store.services
 
+import it.polito.wa2.g13.document_store.data.DocumentFile
 import it.polito.wa2.g13.document_store.data.DocumentMetadata
 import it.polito.wa2.g13.document_store.dtos.DocumentFileDTO
 import it.polito.wa2.g13.document_store.dtos.DocumentMetadataDTO
 import it.polito.wa2.g13.document_store.dtos.UserDocumentDTO
+import it.polito.wa2.g13.document_store.repositories.DocumentFileRepository
 import it.polito.wa2.g13.document_store.repositories.DocumentRepository
 import it.polito.wa2.g13.document_store.util.exceptions.DocumentException
+import jakarta.transaction.Transactional
 import org.slf4j.LoggerFactory
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
@@ -13,7 +16,11 @@ import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 
 @Service
-class DocumentServiceImpl(private val documentRepository: DocumentRepository) : DocumentService {
+@Transactional
+class DocumentServiceImpl(
+    private val documentRepository: DocumentRepository,
+    private val documentFileRepository: DocumentFileRepository
+) : DocumentService {
 
     private val logger = LoggerFactory.getLogger(DocumentServiceImpl::class.java)
 
@@ -29,16 +36,13 @@ class DocumentServiceImpl(private val documentRepository: DocumentRepository) : 
 
     override fun getDocumentBytes(metadataId: Long): DocumentFileDTO {
         return documentRepository.findByIdOrNull(metadataId)
-            ?.let { DocumentFileDTO.from(it.fileBytes) }
+            ?.let { documentFileRepository.findFirstByMetadataMaxVersion(it) }
+            ?.let { DocumentFileDTO.from(it) }
             ?: throw DocumentException.NotFound.from(metadataId)
     }
 
     override fun saveDocument(documentDto: UserDocumentDTO): DocumentMetadataDTO {
         val document = DocumentMetadata.from(documentDto)
-
-        if (documentRepository.existsByName(document.name)) {
-            throw DocumentException.Duplicate.from(document.name)
-        }
 
         val newDocument = documentRepository.save(document)
 
@@ -50,12 +54,18 @@ class DocumentServiceImpl(private val documentRepository: DocumentRepository) : 
         val oldDocument = documentRepository.findByIdOrNull(metadataId)
             ?: throw DocumentException.NotFound.from(metadataId)
 
+        val lastFile = documentFileRepository.findFirstByMetadataMaxVersion(oldDocument)
+            ?: throw DocumentException.NotFound.from(metadataId)
+
         oldDocument.apply {
             this.name = document.name
             this.size = document.size
             this.contentType = document.contentType
-            this.fileBytes.file = document.bytes.toByteArray()
         }
+
+        val newVersion = DocumentFile(0, oldDocument, lastFile.version + 1, document.bytes.toByteArray())
+
+        oldDocument.fileBytes.add(newVersion)
 
         val updatedDocument = documentRepository.save(oldDocument)
 
@@ -73,5 +83,12 @@ class DocumentServiceImpl(private val documentRepository: DocumentRepository) : 
 
     override fun getDocumentByMailId(mailId: String): List<DocumentMetadataDTO> {
         return documentRepository.findAllByMailId(mailId).map { DocumentMetadataDTO.from(it) }
+    }
+
+    override fun getDocumentVersion(metadataId: Long, version: Long): DocumentFileDTO {
+        return documentRepository.findByIdOrNull(metadataId)
+            ?.let { documentFileRepository.findFirstByMetadataAndVersion(it, version) }
+            ?.let { DocumentFileDTO.from(it) }
+            ?: throw DocumentException.NotFound.from(metadataId)
     }
 }
