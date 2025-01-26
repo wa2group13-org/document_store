@@ -6,6 +6,8 @@ import it.polito.wa2.g13.document_store.dtos.UserDocumentDTO
 import it.polito.wa2.g13.document_store.services.DocumentService
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
+import org.springframework.data.web.PageableDefault
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -87,5 +89,23 @@ class DocumentController(
         @PathVariable version: Long,
     ): DocumentFileDTO {
         return documentService.getDocumentVersion(metadataId, version)
+    }
+
+    @GetMapping("contactId/{contactId}")
+    @ResponseStatus(HttpStatus.OK)
+    fun getDocumentByContactId(
+        @PathVariable("contactId") contactId: Long,
+        @PageableDefault pageable: Pageable,
+    ): Page<DocumentMetadataDTO> {
+        return documentService.getDocumentsByContact(contactId, pageable)
+    }
+
+    @GetMapping("jobOfferId/{jobOfferId}")
+    @ResponseStatus(HttpStatus.OK)
+    fun getDocumentByJobOfferId(
+        @PathVariable("jobOfferId") jobOfferId: Long,
+        @PageableDefault pageable: Pageable,
+    ): Page<DocumentMetadataDTO> {
+        return documentService.getDocumentsByContact(jobOfferId, pageable)
     }
 }

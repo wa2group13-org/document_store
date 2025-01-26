@@ -12,6 +12,7 @@ import jakarta.transaction.Transactional
 import org.slf4j.LoggerFactory
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 
@@ -54,18 +55,23 @@ class DocumentServiceImpl(
         val oldDocument = documentRepository.findByIdOrNull(metadataId)
             ?: throw DocumentException.NotFound.from(metadataId)
 
-        val lastFile = documentFileRepository.findFirstByMetadataMaxVersion(oldDocument)
-            ?: throw DocumentException.NotFound.from(metadataId)
-
         oldDocument.apply {
             this.name = document.name
-            this.size = document.size
+            this.size = document.bytes?.size?.toLong() ?: oldDocument.size
             this.contentType = document.contentType
+            this.jobOfferId = document.jobOfferId
+            this.contactId = document.contactId
         }
 
-        val newVersion = DocumentFile(0, oldDocument, lastFile.version + 1, document.bytes.toByteArray())
+        // Update the file bytes
+        if (document.bytes != null) {
+            val lastFile = documentFileRepository.findFirstByMetadataMaxVersion(oldDocument)
+                ?: throw DocumentException.NotFound.from(metadataId)
 
-        oldDocument.fileBytes.add(newVersion)
+            val newVersion = DocumentFile(0, oldDocument, lastFile.version + 1, document.bytes.toByteArray())
+
+            oldDocument.fileBytes.add(newVersion)
+        }
 
         val updatedDocument = documentRepository.save(oldDocument)
 
@@ -90,5 +96,13 @@ class DocumentServiceImpl(
             ?.let { documentFileRepository.findFirstByMetadataAndVersion(it, version) }
             ?.let { DocumentFileDTO.from(it) }
             ?: throw DocumentException.NotFound.from(metadataId)
+    }
+
+    override fun getDocumentsByContact(contactId: Long, page: Pageable): Page<DocumentMetadataDTO> {
+        return documentRepository.findByContactId(contactId, page).map(DocumentMetadataDTO::from)
+    }
+
+    override fun getDocumentsByJobOffer(jobOfferId: Long, page: Pageable): Page<DocumentMetadataDTO> {
+        return documentRepository.findByJobOfferId(jobOfferId, page).map(DocumentMetadataDTO::from)
     }
 }

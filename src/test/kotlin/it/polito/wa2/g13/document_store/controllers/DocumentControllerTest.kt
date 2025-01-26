@@ -5,7 +5,6 @@ import it.polito.wa2.g13.document_store.data.DocumentFile
 import it.polito.wa2.g13.document_store.data.DocumentMetadata
 import it.polito.wa2.g13.document_store.dtos.DocumentFileDTO
 import it.polito.wa2.g13.document_store.dtos.DocumentMetadataDTO
-import it.polito.wa2.g13.document_store.repositories.DocumentFileRepository
 import it.polito.wa2.g13.document_store.repositories.DocumentRepository
 import it.polito.wa2.g13.document_store.util.ResultPage
 import it.polito.wa2.g13.document_store.util.nullable
@@ -52,8 +51,11 @@ class DocumentControllerTest : IntegrationTest() {
                 name,
                 0,
                 "*/*",
+                null,
+                null,
                 ZonedDateTime.now(),
                 mutableSetOf(),
+
             ).apply {
                 fileBytes.add(DocumentFile(0, this, 1, bytes.toByteArray()))
             }
@@ -62,9 +64,6 @@ class DocumentControllerTest : IntegrationTest() {
 
     @Autowired
     private lateinit var documentRepository: DocumentRepository
-
-    @Autowired
-    private lateinit var documentFileRepository: DocumentFileRepository
 
     @Autowired
     private lateinit var testTemplate: TestRestTemplate

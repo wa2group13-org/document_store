@@ -21,10 +21,17 @@ class DocumentMetadata(
      */
     @Column(updatable = false)
     var mailId: String?,
-    @Column(unique = true)
     var name: String,
     var size: Long,
     var contentType: String,
+    /**
+     * References a Contact (professional/customer) in the CRM.
+     */
+    var contactId: Long?,
+    /**
+     * References a JobOffer in the CRM.
+     */
+    var jobOfferId: Long?,
     @Temporal(TemporalType.TIMESTAMP)
     @Column(updatable = false)
     var creationTimestamp: ZonedDateTime,
@@ -42,8 +49,10 @@ class DocumentMetadata(
             contentType = file.contentType,
             creationTimestamp = ZonedDateTime.now(),
             fileBytes = mutableSetOf(),
+            contactId = file.contactId,
+            jobOfferId = file.jobOfferId,
         ).apply {
-            fileBytes.add(DocumentFile(0, this, 1, file.bytes.toByteArray()))
+            fileBytes.add(DocumentFile(0, this, 1, file.bytes!!.toByteArray()))
         }
     }
 }
