@@ -4,6 +4,7 @@ import it.polito.wa2.g13.document_store.dtos.DocumentFileDTO
 import it.polito.wa2.g13.document_store.dtos.DocumentMetadataDTO
 import it.polito.wa2.g13.document_store.dtos.UserDocumentDTO
 import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 
 interface DocumentService {
     fun getDocumentByPage(pageNumber: Int, limit: Int): Page<DocumentMetadataDTO>
@@ -29,4 +30,10 @@ interface DocumentService {
      * Get a [it.polito.wa2.g13.document_store.data.DocumentMetadata] by the [mailId] field
      */
     fun getDocumentByMailId(mailId: String): List<DocumentMetadataDTO>
+
+    fun getDocumentVersion(metadataId: Long, version: Long): DocumentFileDTO
+
+    fun getDocumentsByContact(contactId: Long, page: Pageable): Page<DocumentMetadataDTO>
+
+    fun getDocumentsByJobOffer(jobOfferId: Long, page: Pageable): Page<DocumentMetadataDTO>
 }

@@ -5,12 +5,16 @@ import it.polito.wa2.g13.document_store.data.DocumentFile
 data class DocumentFileDTO(
     val metadata: DocumentMetadataDTO,
     val bytes: ByteArray,
+    val version: Long,
+    val id: Long,
 ) {
     companion object {
         @JvmStatic
         fun from(document: DocumentFile): DocumentFileDTO = DocumentFileDTO(
             metadata = DocumentMetadataDTO.from(document.metadata),
-            bytes = document.file
+            bytes = document.file,
+            version = document.version,
+            id = document.id,
         )
     }
 

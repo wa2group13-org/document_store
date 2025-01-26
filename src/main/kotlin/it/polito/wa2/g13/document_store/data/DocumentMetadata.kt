@@ -2,7 +2,7 @@ package it.polito.wa2.g13.document_store.data
 
 import it.polito.wa2.g13.document_store.dtos.UserDocumentDTO
 import jakarta.persistence.*
-import java.util.*
+import java.time.ZonedDateTime
 
 /**
  * All [Entity] classes **MUST** be plain classes and not data classes,
@@ -21,31 +21,38 @@ class DocumentMetadata(
      */
     @Column(updatable = false)
     var mailId: String?,
-    @Column(unique = true)
     var name: String,
     var size: Long,
     var contentType: String,
+    /**
+     * References a Contact (professional/customer) in the CRM.
+     */
+    var contactId: Long?,
+    /**
+     * References a JobOffer in the CRM.
+     */
+    var jobOfferId: Long?,
     @Temporal(TemporalType.TIMESTAMP)
     @Column(updatable = false)
-    var creationTimestamp: Date,
-    @OneToOne(cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
-    @JoinColumn(referencedColumnName = "id", name = "file_id", foreignKey = ForeignKey())
-    var fileBytes: DocumentFile
+    var creationTimestamp: ZonedDateTime,
+    @OneToMany(mappedBy = "metadata", cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
+    var fileBytes: MutableSet<DocumentFile>,
 ) {
 
     companion object {
         @JvmStatic
-        fun from(file: UserDocumentDTO): DocumentMetadata {
-            val bytes = DocumentFile(0, file.bytes.toByteArray())
-            return DocumentMetadata(
-                id = 0,
-                mailId = file.mailId,
-                name = file.name,
-                size = file.size,
-                contentType = file.contentType,
-                creationTimestamp = Calendar.getInstance().time,
-                fileBytes = bytes,
-            )
+        fun from(file: UserDocumentDTO) = DocumentMetadata(
+            id = 0,
+            mailId = file.mailId,
+            name = file.name,
+            size = file.size,
+            contentType = file.contentType,
+            creationTimestamp = ZonedDateTime.now(),
+            fileBytes = mutableSetOf(),
+            contactId = file.contactId,
+            jobOfferId = file.jobOfferId,
+        ).apply {
+            fileBytes.add(DocumentFile(0, this, 1, file.bytes!!.toByteArray()))
         }
     }
 }
