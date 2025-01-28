@@ -36,4 +36,6 @@ interface DocumentService {
     fun getDocumentsByContact(contactId: Long, page: Pageable): Page<DocumentMetadataDTO>
 
     fun getDocumentsByJobOffer(jobOfferId: Long, page: Pageable): Page<DocumentMetadataDTO>
+
+    fun getDocumentLastVersion(metadataId: Long): Long
 }

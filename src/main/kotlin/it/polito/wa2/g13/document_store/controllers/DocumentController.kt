@@ -108,4 +108,9 @@ class DocumentController(
     ): Page<DocumentMetadataDTO> {
         return documentService.getDocumentsByContact(jobOfferId, pageable)
     }
+
+    @GetMapping("{metadataId}/versions/last")
+    fun getDocumentLastVersion(@PathVariable metadataId: Long) : Long {
+        return documentService.getDocumentLastVersion(metadataId)
+    }
 }

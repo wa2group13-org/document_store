@@ -105,4 +105,12 @@ class DocumentServiceImpl(
     override fun getDocumentsByJobOffer(jobOfferId: Long, page: Pageable): Page<DocumentMetadataDTO> {
         return documentRepository.findByJobOfferId(jobOfferId, page).map(DocumentMetadataDTO::from)
     }
+
+    override fun getDocumentLastVersion(metadataId: Long): Long {
+
+        return documentRepository.findByIdOrNull(metadataId)
+            ?.let { documentFileRepository.findFirstByMetadataMaxVersion(it) }
+            ?.version
+            ?: throw DocumentException.NotFound.from(metadataId)
+    }
 }
